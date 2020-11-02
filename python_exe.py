@@ -1,17 +1,27 @@
 #!/usr/bin/python
 
-# pig -x local python_exe.py "'Katrin Marras'"
+# Run command: pig -x local /usr/local/pig_data/python_exe.py "'Katrin Marras'"
+
+# rozbalovat, pokym bude existovat identifikator
+# vyhodnocovanie -> priemer osoby vlastnosti / najviac / najmenej
 
 from org.apache.pig.scripting import *
 import sys
 
-def print_data(iterator):
+def is_final(iterator):
 	for pig_tuple in iterator:
-		subject = str(pig_tuple.get(0))
-		predicate = str(pig_tuple.get(1))
 		p_object = str(pig_tuple.get(2))
-		print subject, predicate, p_object
+		if p_object[1] == '.':
+			return False
+	return True
 
+def find_object_identifiers(iterator):
+	identifiers = []
+	for pig_tuple in iterator:
+		p_object = str(pig_tuple.get(2))
+		if p_object[1] == '.':
+			identifiers.append(p_object)
+	return identifiers
 
 if __name__ == '__main__':
 	P = Pig.compile("""
@@ -39,5 +49,9 @@ if __name__ == '__main__':
 		raise 'failed'
 	print '-------------------------------------------------------------------------------------------------------------------------------------'
 	iterator = stats.result("readable_data").iterator()
-	print_data(iterator)
+	while not is_final(iterator):
+		identifiers = find_object_identifiers(iterator)
+		print identifiers
+		# pig join
+		break
 	
