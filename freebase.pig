@@ -1,6 +1,6 @@
 /*
 	Call script like to pass name of person:
-	pig -x local -param name='Katrin Marras' /usr/local/pig_data/pig_script.pig
+	pig -x local -param name="'Katrin Marras'" /usr/local/pig_data/freebase.pig
 	rozbalovat, pokym bude existovat identifikator
 */
 -- 
@@ -29,6 +29,7 @@ cleared_joined_data = FOREACH cleared_joined_data GENERATE tuple_0.subject, tupl
 -- find information only about given person
 -- 	name_data = FILTER cleared_joined_data BY (predicate MATCHES '.*type.object.name.*') AND (p_object == 'Katrin Marras');
 name_data = FILTER cleared_joined_data BY (predicate MATCHES '.*type.object.name.*') AND (p_object == '$name');
+
 unique_identifier = DISTINCT(FOREACH name_data GENERATE subject);
 unique_person_data = JOIN unique_identifier BY subject, cleared_joined_data BY subject;
 unique_person_data = FOREACH unique_person_data GENERATE unique_identifier.subject, predicate, p_object;
