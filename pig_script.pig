@@ -17,6 +17,7 @@ filtered_data = FILTER all_data BY (predicate MATCHES '.*http://rdf.freebase.com
 -- join filtered data and identifier
 unique_person_data = JOIN identifier BY subject, filtered_data BY subject;
 unique_person_data = DISTINCT(FOREACH unique_person_data GENERATE filtered_data::subject, filtered_data::predicate, filtered_data::object);
+DUMP unique_person_data;
 -- clear data to readable format
 readable_data = FOREACH unique_person_data GENERATE myfuncs.clear_data(filtered_data::subject, filtered_data::predicate, filtered_data::object);
 readable_data = FOREACH readable_data GENERATE tuple_0.subject, tuple_0.predicate, tuple_0.p_object;

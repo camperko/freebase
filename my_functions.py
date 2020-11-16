@@ -1,21 +1,18 @@
 @outputSchema('(subject:chararray,predicate:chararray,p_object:chararray)')
 def clear_data(subject, predicate, p_object):
-	subject = subject[1:-1].split('/')[-1]
 	predicate = predicate[1:-1].split('/')[-1]
-	if '/' in p_object:
-		p_object = p_object[1:-1].split('/')[-1]
+	if 'rdf.freebase.com' in p_object:
+		p_object_tmp = p_object[1:-1].split('/')[-1]
+		if p_object_tmp[1] != '.' or p_object_tmp.count('.') != 1:
+			p_object = p_object_tmp
+	elif '"' in p_object and p_object[0] == '"':
+		quotation = [pos for pos, char in enumerate(p_object) if char == '"']
+		p_object = p_object[quotation[0] + 1:quotation[1]]
 	if 'type.object.type' in predicate:
 		predicate = ''
 		p_object = p_object.replace('.', ' ')
 	else:
 		predicate = predicate.replace('.', ' ')
-	return subject, predicate, p_object
-	
-@outputSchema('(subject:chararray,predicate:chararray,p_object:chararray)')
-def clear_object(subject, predicate, p_object):
-	if '"' in p_object:
-		quotation = [pos for pos, char in enumerate(p_object) if char == '"']
-		p_object = p_object[quotation[0] + 1:quotation[1]]
 	return subject, predicate, p_object
 	
 @outputSchema('(subject:chararray,object:chararray)')
