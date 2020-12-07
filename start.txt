@@ -1,0 +1,14 @@
+hdfs dfs -mkdir hdfs://localhost:9000/freebase_data
+hdfs dfs -put /home/Download/freebase.gz dfs://localhost:9000/freebase_data/
+
+hdfs dfs -mkdir hdfs://localhost:9000/python_functions
+hdfs dfs -put /home/Download/my_functions.py dfs://localhost:9000/python_functions/
+
+hdfs dfs -mkdir hdfs://localhost:9000/pig_extraction
+hdfs dfs -put /home/Download/person_extraction.pig dfs://localhost:9000/pig_extraction/
+
+hdfs dfs -mkdir hdfs://localhost:9000/pig_data
+hdfs dfs -put /home/Download/create_data.pig dfs://localhost:9000/pig_data/
+
+pig -x mapreduce hdfs://localhost:9000/pig_extraction/person_extraction.pig
+pig -x mapreduce hdfs://localhost:9000/pig_data/create_data.pig

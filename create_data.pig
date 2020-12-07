@@ -1,10 +1,15 @@
+/*
+	Script to extract selected data from freebase
+	Run command: pig -x local /usr/local/pig_data/create_data.pig
+	Run command: pig -x mapreduce hdfs://localhost:9000/pig_data/create_data.pig
+*/
+
 -- register my UDF in python
-register '/usr/local/pig_data/my_functions.py' using jython as myfuncs;
+register 'hdfs://localhost:9000/python_functions/my_functions.py' using jython as myfuncs;
 
-identifier_data = LOAD '/usr/local/pig_data/persons.txt' USING PigStorage('\t') AS (subject:chararray, object:chararray);
+identifier_data = LOAD 'hdfs://localhost:9000/person_output/part-m-00000' USING PigStorage('\t') AS (subject:chararray, object:chararray);
 
-data = LOAD '/usr/local/pig_data/freebase.gz' USING PigStorage('\t') AS (subject:chararray, predicate:chararray, object:chararray);
-data = LIMIT data 2500000;
+data = LOAD 'hdfs://localhost:9000/freebase_data/freebase.gz' USING PigStorage('\t') AS (subject:chararray, predicate:chararray, object:chararray);
 data = FILTER data BY (predicate MATCHES '.*http://rdf.freebase.com.*') AND NOT (object MATCHES '.*http://rdf.freebase.com/ns/base.*') AND NOT (predicate == '<http://rdf.freebase.com/ns/type.object.key>') AND NOT (predicate == '<http://rdf.freebase.com/key/dataworld.freeq>') AND NOT (predicate == '<http://rdf.freebase.com/key/authority.netflix.api>') AND NOT (object == '<http://rdf.freebase.com/ns/common.topic>') AND NOT (predicate == '<http://rdf.freebase.com/key/user.hangy.viaf>') AND NOT (predicate == '<http://rdf.freebase.com/key/authority.us.gov.loc.na>') AND NOT (predicate == '<http://rdf.freebase.com/key/wikipedia.en_id>') AND NOT (predicate == '<http://rdf.freebase.com/key/authority.musicbrainz>') AND NOT (object == '<http://rdf.freebase.com/ns/base.type_ontology.physically_instantiable>') AND NOT (object == '<http://rdf.freebase.com/ns/people.person>') AND NOT (object == '<http://rdf.freebase.com/ns/common.notable_for>');
 
 -- OBJECT NAMES -d
@@ -136,3 +141,22 @@ topical_web_data = FOREACH (GROUP topical_web_data BY subject) GENERATE FLATTEN(
 merged_web_data = JOIN webpages_data BY subject FULL OUTER, topical_web_data BY subject;
 merged_web_data = FOREACH merged_web_data GENERATE myfuncs.join_bags($0, $1, $2, $3);
 merged_web_data = FOREACH merged_web_data GENERATE tuple_0.subject, tuple_0.merged_data;
+
+-- FINAL DATA
+final_data = FOREACH(JOIN identifier_data BY subject LEFT OUTER, gender_data BY subject) GENERATE $0, $1, $3;
+final_data = FOREACH(JOIN final_data BY $0 LEFT OUTER, alias_data BY subject) GENERATE $0, $1, $2, $4;
+final_data = FOREACH(JOIN final_data BY $0 LEFT OUTER, nationality_data BY subject) GENERATE $0, $1, $2, $3, $5;
+final_data = FOREACH(JOIN final_data BY $0 LEFT OUTER, profession_data BY subject) GENERATE $0, $1, $2, $3, $4, $6;
+final_data = FOREACH(JOIN final_data BY $0 LEFT OUTER, birth_date_data BY subject) GENERATE $0, $1, $2, $3, $4, $5, $7;
+final_data = FOREACH(JOIN final_data BY $0 LEFT OUTER, birth_place_data BY subject) GENERATE $0, $1, $2, $3, $4, $5, $6, $8;
+final_data = FOREACH(JOIN final_data BY $0 LEFT OUTER, death_date_data BY subject) GENERATE $0, $1, $2, $3, $4, $5, $6, $7, $9;
+final_data = FOREACH(JOIN final_data BY $0 LEFT OUTER, death_place_data BY subject) GENERATE $0, $1, $2, $3, $4, $5, $6, $7, $8, $10;
+final_data = FOREACH(JOIN final_data BY $0 LEFT OUTER, burial_place_data BY subject) GENERATE $0, $1, $2, $3, $4, $5, $6, $7, $8, $9, $11;
+final_data = FOREACH(JOIN final_data BY $0 LEFT OUTER, merged_type_data BY subject) GENERATE $0, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $12;
+final_data = FOREACH(JOIN final_data BY $0 LEFT OUTER, description_data BY subject) GENERATE $0, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $13;
+final_data = FOREACH(JOIN final_data BY $0 LEFT OUTER, weight_data BY subject) GENERATE $0, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $14;
+final_data = FOREACH(JOIN final_data BY $0 LEFT OUTER, height_data BY subject) GENERATE $0, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $15;
+final_data = FOREACH(JOIN final_data BY $0 LEFT OUTER, merged_web_data BY subject) GENERATE $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $16;
+
+STORE final_data INTO 'hdfs://localhost:9000/final_output/' USING PigStorage('\t');
+
