@@ -10,7 +10,6 @@ register 'hdfs://localhost:9000/python_functions/my_functions.py' using jython a
 
 -- local mode load function
 data = LOAD 'hdfs://localhost:9000/freebase_data/freebase.gz' USING PigStorage('\t') AS (subject:chararray, predicate:chararray, object:chararray);
-data = LIMIT data 1000000;
 -- generate just object name data
 name_data = FILTER data BY (predicate == '<http://rdf.freebase.com/ns/type.object.name>');
 name_data = DISTINCT(FOREACH name_data GENERATE subject, object);
