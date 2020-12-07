@@ -37,7 +37,7 @@ pig -x mapreduce hdfs://localhost:9000/pig_data/create_data.pig
 Schema of person output data:
  - name: string
  - gender: string
- - aliases: array<string>
+ - aliases: array[string]
  - nationality: string
  - profession: string
  - birth_date: string
@@ -45,8 +45,8 @@ Schema of person output data:
  - death_date: string
  - death_place: string
  - burial_place: string
- - type_information: array<string>
+ - type_information: array[string]
  - description: string
  - weight: float
  - height: float
- - webpages: array<string>
+ - webpages: array[string]
