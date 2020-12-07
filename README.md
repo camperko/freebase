@@ -37,7 +37,7 @@ pig -x mapreduce hdfs://localhost:9000/pig_data/create_data.pig
 Schema of person output data:
  - name: string
  - gender: string
- - aliases: array[string]
+ - name_aliases: array[string]
  - nationality: string
  - profession: string
  - birth_date: string
