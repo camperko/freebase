@@ -24,11 +24,22 @@ gender_data = DISTINCT(FOREACH gender_data GENERATE subject, object);
 gender_data = JOIN gender_data BY object, object_name_data BY subject;
 gender_data = FOREACH gender_data GENERATE $0, $3;
 
+-- NAMES 
+names_data = FILTER data BY (predicate == '<http://rdf.freebase.com/ns/type.object.name>');
+names_data = DISTINCT(FOREACH names_data GENERATE myfuncs.clear_data(subject, object));
+names_data = FOREACH names_data GENERATE tuple_0.subject, tuple_0.object;
+names_data = FOREACH (GROUP names_data BY subject) GENERATE FLATTEN(group) AS subject, names_data.(object) AS name_type;
+
 -- ALIAS -d
 alias_data = FILTER data BY (predicate == '<http://rdf.freebase.com/ns/common.topic.alias>');
 alias_data = DISTINCT(FOREACH alias_data GENERATE myfuncs.clear_data(subject, object));
 alias_data = FOREACH alias_data GENERATE tuple_0.subject, tuple_0.object;
 alias_data = FOREACH (GROUP alias_data BY subject) GENERATE FLATTEN(group) AS subject, alias_data.(object) AS alias_type;
+
+-- MERGED NAMES
+merged_names_data = JOIN names_data BY subject FULL OUTER, alias_data BY subject;
+merged_names_data = FOREACH merged_names_data GENERATE myfuncs.join_bags($0, $1, $2, $3);
+merged_names_data = FOREACH merged_names_data GENERATE tuple_0.subject, tuple_0.merged_data;
 
 -- NATIONALITY -d
 nationality_data = FILTER data BY (predicate == '<http://rdf.freebase.com/ns/people.person.nationality>');
@@ -144,7 +155,7 @@ merged_web_data = FOREACH merged_web_data GENERATE tuple_0.subject, tuple_0.merg
 
 -- FINAL DATA
 final_data = FOREACH(JOIN identifier_data BY subject LEFT OUTER, gender_data BY subject) GENERATE $0, $1, $3;
-final_data = FOREACH(JOIN final_data BY $0 LEFT OUTER, alias_data BY subject) GENERATE $0, $1, $2, $4;
+final_data = FOREACH(JOIN final_data BY $0 LEFT OUTER, merged_names_data BY subject) GENERATE $0, $1, $2, $4;
 final_data = FOREACH(JOIN final_data BY $0 LEFT OUTER, nationality_data BY subject) GENERATE $0, $1, $2, $3, $5;
 final_data = FOREACH(JOIN final_data BY $0 LEFT OUTER, profession_data BY subject) GENERATE $0, $1, $2, $3, $4, $6;
 final_data = FOREACH(JOIN final_data BY $0 LEFT OUTER, birth_date_data BY subject) GENERATE $0, $1, $2, $3, $4, $5, $7;
