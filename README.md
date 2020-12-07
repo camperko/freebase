@@ -33,7 +33,7 @@ pig -x mapreduce hdfs://localhost:9000/pig_extraction/person_extraction.pig
 
 pig -x mapreduce hdfs://localhost:9000/pig_data/create_data.pig
 
-#
+# Output
 Schema of person output data:
  - name: string
  - gender: string
