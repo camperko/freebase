@@ -53,3 +53,17 @@ def clear_names(group, joined_data):
 def extract_type(subject, p_object):
 	p_object = p_object[1:-1].split('/')[-1].replace('.', ' ')
 	return subject, p_object
+	
+@outputSchema('(subject:chararray,merged_data:bag{tuple_0:(object:chararray)})')
+def join_bags(subject1, bag1, subject2, bag2):
+    subject = subject1
+    if subject is None:
+        subject = subject2
+    if bag1 is None:
+        return subject, bag2
+    elif bag2 is None:
+        return subject, bag1
+    for item in bag2:
+        if item not in bag1:
+            bag1.append(item)
+    return subject, bag1;
