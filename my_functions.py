@@ -1,7 +1,7 @@
 @outputSchema('(subject:chararray,object:chararray)')
 def clear_data(subject, p_object):
 	quotation = [pos for pos, char in enumerate(p_object) if char == '"']
-	p_object = p_object[quotation[0] + 1:quotation[1]]
+	p_object = p_object[quotation[0] + 1:quotation[len(quotation)-1]]
 	return subject, p_object
 	
 @outputSchema('(subject:chararray,object:chararray)')
