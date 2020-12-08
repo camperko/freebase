@@ -23,6 +23,7 @@ gender_data = FILTER data BY (predicate == '<http://rdf.freebase.com/ns/people.p
 gender_data = DISTINCT(FOREACH gender_data GENERATE subject, object);
 gender_data = JOIN gender_data BY object, object_name_data BY subject;
 gender_data = FOREACH gender_data GENERATE $0, $3;
+gender_data = FOREACH (GROUP gender_data BY subject) GENERATE FLATTEN(group) AS subject, gender_data.(object) AS gender_type;
 
 -- NAMES 
 names_data = FILTER data BY (predicate == '<http://rdf.freebase.com/ns/type.object.name>');
@@ -46,40 +47,47 @@ nationality_data = FILTER data BY (predicate == '<http://rdf.freebase.com/ns/peo
 nationality_data = DISTINCT(FOREACH nationality_data GENERATE subject, object);
 nationality_data = JOIN nationality_data BY object, object_name_data BY subject;
 nationality_data = FOREACH nationality_data GENERATE $0, $3;
+nationality_data = FOREACH (GROUP nationality_data BY subject) GENERATE FLATTEN(group) AS subject, nationality_data.(object) AS nationality_type;
 
 -- PROFESSION -d
 profession_data = FILTER data BY (predicate == '<http://rdf.freebase.com/ns/people.person.profession>');
 profession_data = DISTINCT(FOREACH profession_data GENERATE subject, object);
 profession_data = JOIN profession_data BY object, object_name_data BY subject;
 profession_data = FOREACH profession_data GENERATE $0, $3;
+profession_data = FOREACH (GROUP profession_data BY subject) GENERATE FLATTEN(group) AS subject, profession_data.(object) AS profession_type;
 
 -- DATE OF BIRTH -d
 birth_date_data = DISTINCT(FILTER data BY (predicate == '<http://rdf.freebase.com/ns/people.person.date_of_birth>'));
 birth_date_data = DISTINCT(FOREACH birth_date_data GENERATE myfuncs.clear_data(subject, object));
 birth_date_data = FOREACH birth_date_data GENERATE tuple_0.subject, tuple_0.object;
+birth_date_data = FOREACH (GROUP birth_date_data BY subject) GENERATE FLATTEN(group) AS subject, birth_date_data.(object) AS birth_date_type;
 
 -- PLACE OF BIRTH -d
 birth_place_data = FILTER data BY (predicate == '<http://rdf.freebase.com/ns/people.person.place_of_birth>');
 birth_place_data = DISTINCT(FOREACH birth_place_data GENERATE subject, object);
 birth_place_data = JOIN birth_place_data BY object, object_name_data BY subject;
 birth_place_data = FOREACH birth_place_data GENERATE $0, $3;
+birth_place_data = FOREACH (GROUP birth_place_data BY subject) GENERATE FLATTEN(group) AS subject, birth_place_data.(object) AS birth_place_type;
 
 -- DATE OF DEATH -d
 death_date_data = DISTINCT(FILTER data BY (predicate == '<http://rdf.freebase.com/ns/people.deceased_person.date_of_death>'));
 death_date_data = DISTINCT(FOREACH death_date_data GENERATE myfuncs.clear_data(subject, object));
 death_date_data = FOREACH death_date_data GENERATE tuple_0.subject, tuple_0.object;
+death_date_data = FOREACH (GROUP death_date_data BY subject) GENERATE FLATTEN(group) AS subject, death_date_data.(object) AS death_date_type;
 
 -- PLACE OF DEATH -d
 death_place_data = FILTER data BY (predicate == '<http://rdf.freebase.com/ns/people.deceased_person.place_of_death>');
 death_place_data = DISTINCT(FOREACH death_place_data GENERATE subject, object);
 death_place_data = JOIN death_place_data BY object, object_name_data BY subject;
 death_place_data = FOREACH death_place_data GENERATE $0, $3;
+death_place_data = FOREACH (GROUP death_place_data BY subject) GENERATE FLATTEN(group) AS subject, death_place_data.(object) AS death_place_type;
 
 -- PLACE OF BURIAL -d
 burial_place_data = FILTER data BY (predicate == '<http://rdf.freebase.com/ns/people.deceased_person.place_of_burial>');
 burial_place_data = DISTINCT(FOREACH burial_place_data GENERATE subject, object);
 burial_place_data = JOIN burial_place_data BY object, object_name_data BY subject;
 burial_place_data = FOREACH burial_place_data GENERATE $0, $3;
+burial_place_data = FOREACH (GROUP burial_place_data BY subject) GENERATE FLATTEN(group) AS subject, burial_place_data.(object) AS burial_place_type;
 
 -- OBJECT TYPE DATA -d 
 object_type_data = FILTER data BY (predicate == '<http://rdf.freebase.com/ns/type.object.type>');
@@ -127,16 +135,19 @@ description_data = DISTINCT(FILTER data BY (predicate == '<http://rdf.freebase.c
 description_data = GROUP description_data BY subject;
 description_data = FOREACH description_data GENERATE myfuncs.filter_data(group, description_data);
 description_data = FOREACH description_data GENERATE tuple_0.subject, tuple_0.object;
+description_data = FOREACH (GROUP description_data BY subject) GENERATE FLATTEN(group) AS subject, description_data.(object) AS description_type;
 
 -- WEIGHT -d
 weight_data = FILTER data BY (predicate == '<http://rdf.freebase.com/ns/people.person.weight_kg>');
 weight_data = FOREACH weight_data GENERATE myfuncs.clear_data(subject, object);
 weight_data = FOREACH weight_data GENERATE tuple_0.subject, tuple_0.object;
+weight_data = FOREACH (GROUP weight_data BY subject) GENERATE FLATTEN(group) AS subject, weight_data.(object) AS weight_type;
 
 -- HEIGHT -d
 height_data = FILTER data BY (predicate == '<http://rdf.freebase.com/ns/people.person.height_meters>');
 height_data = FOREACH height_data GENERATE myfuncs.clear_data(subject, object);
 height_data = FOREACH height_data GENERATE tuple_0.subject, tuple_0.object;
+height_data = FOREACH (GROUP height_data BY subject) GENERATE FLATTEN(group) AS subject, height_data.(object) AS height_type;
 
 -- WEBPAGES -d
 webpages_data = FILTER data BY (predicate == '<http://rdf.freebase.com/ns/common.topic.topic_equivalent_webpage>');
