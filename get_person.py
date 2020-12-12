@@ -1,5 +1,4 @@
 from elasticsearch import Elasticsearch
-from pprint import pprint
 import textwrap
 import json
 
@@ -319,7 +318,7 @@ def parse(l):
     one_record.name = columns[0]
     for index, column in enumerate(columns[1:]):
         result = []
-        if column == '':
+        if column == '' or column == '\n':
             if index + 1 == 12 or index + 1 == 13:
                 result.append({resolve_inner_type(index + 1): -1})
             else:
@@ -405,7 +404,6 @@ def create_multiple_nested_query(inputs, parts):
             result_nested_query = result_nested_query + ',' + name_query
         else:
             result_nested_query = name_query
-    # print(result_nested_query)
     result_query = {
         'query': {
             'bool': {
@@ -415,7 +413,6 @@ def create_multiple_nested_query(inputs, parts):
             }
         }
     }
-    # print(result_query)
     return json.dumps(result_query)
 
 
@@ -467,12 +464,11 @@ def print_person(person_object):
 def find_person(es_object, search_req):
     res = es_object.search(index=index_name, body=search_req)
     result_object = res['hits']['hits']
-    # pprint(result_object)
+    print(res)
     for result in result_object:
         print_person(result['_source'])
-        # pprint(result['_source'])
     if res['hits']['total']['value'] > 10:
-        print('!!!Too many values, please better specify query!!!')
+        print('!!!Too many values (' + str(res['hits']['total']['value']) + '), please better specify query!!!')
 
 
 if __name__ == '__main__':
@@ -481,6 +477,7 @@ if __name__ == '__main__':
         # Part of code to add extracted persons into elastic index
         # for i in range(7):
         #     name = 'part-r-0000' + str(i)
+        #     print(name)
         #     with open('res/'+name,  encoding='utf-8') as infile:
         #         for line in infile:
         #             parsed_line = parse(line)
@@ -494,7 +491,7 @@ if __name__ == '__main__':
             print('Select search criterion')
             for i in range(11):
                 print(str(i + 1) + ' Search by ' + resolve_search_pair(i + 1)[0])
-            user_choice = input('Select number (eg. 1 3 5): ')
+            user_choice = input('Select number: ')
             choice_parts = user_choice.split(' ')
             search_inputs = []
             for choice_part in choice_parts:
