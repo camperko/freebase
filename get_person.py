@@ -360,7 +360,7 @@ def create_name_query(target_name):
             'name': target_name
         }
     }
-    return json.dumps(search_name_query)
+    return search_name_query
 
 
 def create_nested_query(target_value, target_part_index):
@@ -382,37 +382,28 @@ def create_nested_query(target_value, target_part_index):
             }
         }
     }
-    return json.dumps(nested_query)
+    return nested_query
 
 
 def create_multiple_nested_query(inputs, parts):
-    name_query = None
-    result_nested_query = ''
+    nested_array = []
     if '1' in parts:
-        name_query = create_name_query(inputs[parts.index('1')])
+        nested_array.append(create_name_query(inputs[parts.index('1')]))
         inputs.pop(parts.index('1'))
         parts.pop(parts.index('1'))
 
     for index, part in enumerate(parts):
-        if index == 0:
-            result_nested_query = create_nested_query(inputs[index], part)
-        else:
-            result_nested_query = result_nested_query + ',' + create_nested_query(inputs[index], part)
+        nested_array.append(create_nested_query(inputs[index], part))
 
-    if name_query is not None:
-        if result_nested_query != '':
-            result_nested_query = result_nested_query + ',' + name_query
-        else:
-            result_nested_query = name_query
     result_query = {
         'query': {
             'bool': {
-                'must': [
-                    json.loads(result_nested_query)
-                ]
+                'must': []
             }
         }
     }
+    for item in nested_array:
+        result_query['query']['bool']['must'].append(item)
     return json.dumps(result_query)
 
 
@@ -464,7 +455,7 @@ def print_person(person_object):
 def find_person(es_object, search_req):
     res = es_object.search(index=index_name, body=search_req)
     result_object = res['hits']['hits']
-    print(res)
+    # print(res)
     for result in result_object:
         print_person(result['_source'])
     if res['hits']['total']['value'] > 10:
@@ -491,7 +482,7 @@ if __name__ == '__main__':
             print('Select search criterion')
             for i in range(11):
                 print(str(i + 1) + ' Search by ' + resolve_search_pair(i + 1)[0])
-            user_choice = input('Select number: ')
+            user_choice = input('Select number/s (eg. 1 4 6): ')
             choice_parts = user_choice.split(' ')
             search_inputs = []
             for choice_part in choice_parts:
