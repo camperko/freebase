@@ -453,13 +453,13 @@ def print_person(person_object):
 
 
 def find_person(es_object, search_req):
-    res = es_object.search(index=index_name, body=search_req)
+    res = es_object.search(index=index_name, size=10, body=search_req)
     result_object = res['hits']['hits']
-    # print(res)
     for result in result_object:
         print_person(result['_source'])
     if res['hits']['total']['value'] > 10:
         print('!!!Too many values (' + str(res['hits']['total']['value']) + '), please better specify query!!!')
+        print('--------------------------------------------------------------------')
 
 
 if __name__ == '__main__':
